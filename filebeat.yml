@@ -1,18 +1,20 @@
-filebeat.config.modules.path: "/usr/share/filebeat/modules.d/*.yml"
-
-filebeat.modules:
-  - module: nginx
-
 filebeat:
   prospectors:
-    - input_type: log
+    - type: log
       paths:
-        - "/var/log/nginx/*.log"
-      document_type: nginx-access
-      exclude_files: ['\.gz$']
+        - "/var/log/worker/*.log"
+      json:
+        keys_under_root: true
+        overwrite_keys: true
+        message_key: event
+
+setup:
+  template:
+    name: "worker-%{[beat.version]}"
+    pattern: "worker-%{[beat.version]}-*"
 
 output:
-  logstash:
-    enabled: true
+  elasticsearch:
+    index: worker
     hosts:
-      - logstash:5044
+      - "${ELASTICSEARCH:elasticsearch}:9200"
